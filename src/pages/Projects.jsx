@@ -77,8 +77,8 @@ const Projects = () => {
                     <button
                         onClick={handleCreateClick}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${!isPro && projects.length >= 3
-                                ? 'bg-slate-700 text-slate-400 cursor-not-allowed border border-slate-600'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
+                            ? 'bg-slate-700 text-slate-400 cursor-not-allowed border border-slate-600'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
                             }`}
                     >
                         {!isPro && projects.length >= 3 ? <Lock className="w-4 h-4" /> : <Plus className="w-5 h-5" />}
@@ -110,7 +110,7 @@ const Projects = () => {
                             <div className="h-48 bg-slate-900 relative border-b border-slate-700/50">
                                 {project.images && project.images.length > 0 ? (
                                     <img
-                                        src={`http://127.0.0.1:5000${project.images[0]}`}
+                                        src={`https://saasforge-backend.onrender.com${project.images[0]}`}
                                         alt={project.name}
                                         className="w-full h-full object-cover"
                                     />

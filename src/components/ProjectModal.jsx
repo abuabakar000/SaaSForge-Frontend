@@ -190,7 +190,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSuccess, isPro }) => {
                                     <div className="flex gap-3 mb-3 overflow-x-auto pb-2">
                                         {existingImages.map((img, idx) => (
                                             <div key={idx} className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-slate-600 group">
-                                                <img src={`https://saasforge-backend.onrender.com${img}`} alt="Preview" className="w-full h-full object-cover" />
+                                                <img src={img} alt="Preview" className="w-full h-full object-cover" />
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveExistingImage(img)}

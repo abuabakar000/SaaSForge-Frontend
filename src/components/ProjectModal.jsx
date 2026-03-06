@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNotification } from "../context/NotificationContext";
 import { X, UploadCloud, Info } from "lucide-react";
 
 const ProjectModal = ({ isOpen, onClose, project, onSuccess, isPro }) => {
     const axiosPrivate = useAxiosPrivate();
+    const { showNotification } = useNotification();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -89,6 +91,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSuccess, isPro }) => {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
+            showNotification(project ? 'Project node recalibrated successfully.' : 'New project node initialized successfully.');
             onSuccess();
             onClose();
         } catch (err) {

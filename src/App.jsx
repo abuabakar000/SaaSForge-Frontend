@@ -14,6 +14,7 @@ import PersistLogin from './components/PersistLogin';
 import DashboardLayout from './layouts/DashboardLayout';
 import Projects from './pages/Projects';
 import Settings from './pages/Settings';
+import NotificationsPage from './pages/NotificationsPage';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="projects" element={<Projects />} />
               <Route path="pricing" element={<Pricing />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="notifications" element={<NotificationsPage />} />
 
               <Route element={<RequireAuth allowedRoles={['admin']} />}>
                 <Route path="admin" element={<Admin />} />

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://saasforge-backend.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default axios.create({
     baseURL: BASE_URL,

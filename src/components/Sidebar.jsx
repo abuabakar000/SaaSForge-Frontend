@@ -1,12 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import useLogout from '../hooks/useLogout';
-import { LayoutDashboard, FolderKanban, CreditCard, Settings, ShieldAlert, LogOut } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CreditCard, Settings, ShieldAlert, LogOut, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['user', 'admin'] },
     { label: 'Projects', path: '/projects', icon: FolderKanban, roles: ['user', 'admin'] },
+    { label: 'Notifications', path: '/notifications', icon: Bell, roles: ['user', 'admin'] },
     { label: 'Billing', path: '/pricing', icon: CreditCard, roles: ['user', 'admin'] },
     { label: 'Settings', path: '/settings', icon: Settings, roles: ['user', 'admin'] },
     { label: 'Admin', path: '/admin', icon: ShieldAlert, roles: ['admin'] },
@@ -24,21 +26,17 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen sticky top-0">
+        <aside className="w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/50 flex flex-col h-screen sticky top-0 z-50">
             {/* Logo area */}
-            <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                        <span className="text-white font-bold text-xl leading-none">S</span>
-                    </div>
-                    <span className="text-xl font-bold text-white tracking-tight">SaaSForge</span>
-                </div>
+            <div className="h-24 flex items-center px-6 mb-2">
+                <Link to="/" className="group">
+                    <img src={logo} alt="SaaSForge" className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+                </Link>
             </div>
 
             {/* Navigation links */}
-            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
                 {navItems.map((item) => {
-                    // Check if user has required role for this item
                     const hasAccess = item.roles.some(role => auth?.roles?.includes(role));
                     if (!hasAccess) return null;
 
@@ -49,12 +47,12 @@ const Sidebar = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-indigo-500/10 text-indigo-400'
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                            className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive
+                                ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5'
+                                : 'text-slate-400 hover:text-slate-100 hover:bg-white/5 border border-transparent'
                                 }`}
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                            <item.icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
                             {item.label}
                         </Link>
                     )
@@ -62,24 +60,34 @@ const Sidebar = () => {
             </nav>
 
             {/* User profile & Logout */}
-            <div className="p-4 border-t border-slate-800">
-                <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-inner">
-                        {auth?.user?.charAt(0).toUpperCase() || 'U'}
+            <div className="p-4 p-b-8 border-t border-slate-800/50 bg-slate-900/50">
+                <div className="flex items-center gap-3 px-3 py-3 mb-4 rounded-2xl bg-slate-800/40 border border-slate-700/30 group cursor-default">
+                    <div className="relative">
+                        <div className="absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 to-emerald-500 rounded-full blur opacity-0 group-hover:opacity-30 transition duration-500"></div>
+                        <div className="w-10 h-10 relative rounded-full bg-slate-700 border border-white/10 flex items-center justify-center text-white font-bold text-lg shadow-xl overflow-hidden">
+                            {auth?.avatarUrl ? (
+                                <img src={auth.avatarUrl} alt={auth.user} className="w-full h-full object-cover" />
+                            ) : (
+                                auth?.user?.charAt(0).toUpperCase() || 'U'
+                            )}
+                        </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{auth?.user || 'User'}</p>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">
-                            {auth?.roles?.includes('admin') ? 'Admin' : 'Pro Plan'}
-                        </p>
+                        <p className="text-sm font-bold text-slate-100 truncate">{auth?.user || 'User'}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none">
+                                {auth?.roles?.includes('admin') ? 'ADMIN NODE' : 'FREE PLAN'}
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all duration-300"
                 >
-                    <LogOut className="w-5 h-5 text-slate-500 hover:text-red-400" />
+                    <LogOut className="w-5 h-5" />
                     Sign Out
                 </button>
             </div>

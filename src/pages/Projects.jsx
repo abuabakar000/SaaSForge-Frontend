@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useAuth from "../hooks/useAuth";
-import { Plus, Image as ImageIcon, Github, ExternalLink, Edit2, Trash2, Crown, Lock } from "lucide-react";
+import { Plus, Github, ExternalLink, Edit3, Trash2, Package, Layers, Lock } from "lucide-react";
 import ProjectModal from "../components/ProjectModal";
 
 const Projects = () => {
     const { auth } = useAuth();
     const axiosPrivate = useAxiosPrivate();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,6 +23,19 @@ const Projects = () => {
         fetchProjects();
     }, []);
 
+    // Handle auto-edit from Dashboard
+    useEffect(() => {
+        if (!loading && projects.length > 0 && location.state?.editProjectId) {
+            const projectToEdit = projects.find(p => p._id === location.state.editProjectId);
+            if (projectToEdit) {
+                setEditingProject(projectToEdit);
+                setIsModalOpen(true);
+                // Clear state so it doesn't reopen on refresh/navigation back
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [loading, projects, location.state, navigate, location.pathname]);
+
     const fetchProjects = async () => {
         try {
             const response = await axiosPrivate.get('/projects');
@@ -32,139 +48,124 @@ const Projects = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this project?')) return;
+        if (!window.confirm('Confirm the permanent deletion of this project node?')) return;
 
         try {
             await axiosPrivate.delete(`/projects/${id}`);
             setProjects(projects.filter(p => p._id !== id));
         } catch (err) {
             console.error("Failed to delete", err);
-            alert(err?.response?.data?.message || 'Delete failed');
+            alert(err?.response?.data?.message || 'Deletion sequence failed.');
         }
     };
 
     const handleCreateClick = () => {
         if (!isPro && projects.length >= 3) {
-            alert("Free plan limited to 3 projects. Expand your portfolio with Pro!");
+            alert("Free plan limited to 3 project nodes. Expand your system with Pro.");
             return;
         }
         setEditingProject(null);
         setIsModalOpen(true);
     };
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-full min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-            </div>
-        );
-    }
-
     return (
-        <section className="p-8 max-w-7xl mx-auto">
-            <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-6">
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Projects</h1>
-                    <p className="text-slate-400">Manage your SaaS portfolio and showcase your work.</p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {!isPro && (
-                        <div className="text-sm font-medium text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
-                            <span className={projects.length >= 3 ? 'text-red-400' : 'text-emerald-400'}>{projects.length}</span> / 3 Projects
-                        </div>
-                    )}
-                    <button
-                        onClick={handleCreateClick}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${!isPro && projects.length >= 3
-                            ? 'bg-slate-700 text-slate-400 cursor-not-allowed border border-slate-600'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
-                            }`}
-                    >
-                        {!isPro && projects.length >= 3 ? <Lock className="w-4 h-4" /> : <Plus className="w-5 h-5" />}
-                        New Project
-                    </button>
-                </div>
-            </header>
-
-            {projects.length === 0 ? (
-                <div className="bg-slate-800/50 border border-slate-700 border-dashed rounded-3xl p-12 text-center max-w-2xl mx-auto">
-                    <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <ImageIcon className="w-8 h-8 text-slate-500" />
+                    <h1 className="text-4xl font-black text-white tracking-tighter sm:text-5xl">
+                        Projects<span className="text-indigo-500">.</span>
+                    </h1>
+                    <div className="flex items-center gap-3 mt-2">
+                        <p className="text-slate-500 font-medium">Manage and monitor your specialized development nodes.</p>
+                        {!isPro && (
+                            <div className="text-[10px] font-black text-slate-500 bg-slate-900 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest hidden sm:block">
+                                Quota: <span className={projects.length >= 3 ? 'text-red-400' : 'text-emerald-400'}>{projects.length}</span> / 3
+                            </div>
+                        )}
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">No projects yet</h3>
-                    <p className="text-slate-400 mb-6">Create your first project to start building your portfolio.</p>
-                    <button
-                        onClick={handleCreateClick}
-                        className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
-                    >
-                        Create Project
-                    </button>
                 </div>
-            ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map(project => (
-                        <div key={project._id} className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl group hover:border-slate-600 transition-colors flex flex-col">
+                <button
+                    onClick={handleCreateClick}
+                    className={`px-6 py-3 font-bold rounded-2xl shadow-lg active:scale-95 transition-all flex items-center gap-2 group ${!isPro && projects.length >= 3
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
+                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'}`}
+                >
+                    {!isPro && projects.length >= 3 ? <Lock className="w-5 h-5" /> : <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />}
+                    New Discovery
+                </button>
+            </div>
 
-                            {/* Image Header */}
-                            <div className="h-48 bg-slate-900 relative border-b border-slate-700/50">
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-80 bg-slate-900/40 rounded-[2rem] border border-white/5 animate-pulse"></div>
+                    ))}
+                </div>
+            ) : projects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {projects.map((project) => (
+                        <div
+                            key={project._id}
+                            className="bg-slate-900/40 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-hidden group hover:border-indigo-500/30 transition-all duration-500 premium-shadow"
+                        >
+                            {/* Project Header/Image */}
+                            <div className="h-48 bg-slate-950/50 relative overflow-hidden">
                                 {project.images && project.images.length > 0 ? (
                                     <img
-                                        src={`https://saasforge-backend.onrender.com${project.images[0]}`}
+                                        src={project.images[0]}
                                         alt={project.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-700">
-                                        <ImageIcon className="w-12 h-12 opacity-50" />
+                                    <div className="w-full h-full flex items-center justify-center text-slate-800">
+                                        <Layers className="w-16 h-16 opacity-20" />
                                     </div>
                                 )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
 
-                                {project.isFeatured && (
-                                    <div className="absolute top-3 left-3 px-2 py-1 bg-amber-500/90 backdrop-blur text-white text-[10px] font-black uppercase tracking-wider rounded border border-amber-400/50 flex items-center gap-1 shadow-lg">
-                                        <Crown className="w-3 h-3" /> Featured
-                                    </div>
-                                )}
+                                {/* Badge */}
+                                <div className="absolute top-4 right-4 px-3 py-1 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-full">
+                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Node Verified</span>
+                                </div>
                             </div>
 
-                            {/* Body */}
-                            <div className="p-5 flex-1 flex flex-col">
-                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-1" title={project.name}>
-                                    {project.name}
-                                </h3>
-                                <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1" title={project.description}>
-                                    {project.description}
+                            {/* Content */}
+                            <div className="p-8">
+                                <h3 className="text-xl font-bold text-white tracking-tight mb-2 group-hover:text-indigo-400 transition-colors">{project.name}</h3>
+                                <p className="text-slate-400 text-sm line-clamp-2 font-medium mb-6 leading-relaxed">
+                                    {project.description || 'No specialized description provided for this development node.'}
                                 </p>
 
-                                {/* Links & Actions */}
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                                <div className="flex items-center justify-between pt-6 border-t border-white/5">
                                     <div className="flex items-center gap-3">
-                                        {project.githubLink ? (
-                                            <a href={project.githubLink} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors p-1.5 hover:bg-slate-700 rounded-lg">
-                                                <Github className="w-4 h-4" />
+                                        <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-indigo-500/20 flex items-center justify-center text-[10px] font-bold text-indigo-400 cursor-default" title="Deployment Status">OK</div>
+                                        {project.githubLink && (
+                                            <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                                                <Github className="w-5 h-5" />
                                             </a>
-                                        ) : (
-                                            <div className="w-7"></div>
                                         )}
-                                        {project.liveLink ? (
-                                            <a href={project.liveLink} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-emerald-400 transition-colors p-1.5 hover:bg-slate-700 rounded-lg">
-                                                <ExternalLink className="w-4 h-4" />
+                                        {project.liveLink && (
+                                            <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">
+                                                <ExternalLink className="w-5 h-5" />
                                             </a>
-                                        ) : (
-                                            <div className="w-7"></div>
                                         )}
                                     </div>
-
-                                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex items-center gap-2 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
                                         <button
-                                            onClick={() => { setEditingProject(project); setIsModalOpen(true); }}
-                                            className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                                            onClick={() => {
+                                                setEditingProject(project);
+                                                setIsModalOpen(true);
+                                            }}
+                                            className="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl border border-white/5 transition-all"
+                                            title="Edit Node"
                                         >
-                                            <Edit2 className="w-4 h-4" />
+                                            <Edit3 className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(project._id)}
-                                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            className="p-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500/60 hover:text-red-400 rounded-xl border border-transparent hover:border-red-500/20 transition-all"
+                                            title="Nullify Node"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -174,18 +175,30 @@ const Projects = () => {
                         </div>
                     ))}
                 </div>
+            ) : (
+                <div className="py-24 text-center bg-slate-900/20 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-white/5">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-900 border border-white/5 mb-8 shadow-2xl">
+                        <Package className="w-10 h-10 text-slate-700" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white italic mb-2 tracking-tight">System Library Empty</h3>
+                    <p className="text-slate-500 max-w-sm mx-auto mb-10 font-medium">No specialized project nodes have been initialized yet. Start your first discovery below.</p>
+                    <button
+                        onClick={handleCreateClick}
+                        className="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-indigo-500/20 transition-all active:scale-95"
+                    >
+                        Initialize First Node
+                    </button>
+                </div>
             )}
 
-            {isModalOpen && (
-                <ProjectModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    project={editingProject}
-                    onSuccess={fetchProjects}
-                    isPro={isPro}
-                />
-            )}
-        </section>
+            <ProjectModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchProjects}
+                project={editingProject}
+                isPro={isPro}
+            />
+        </div>
     );
 };
 
